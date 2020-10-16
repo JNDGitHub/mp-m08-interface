@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, render_template_string
 from . import db
 from . import dialog
 from flask_login import login_required, current_user
@@ -47,4 +47,8 @@ def search_analysis():
 @main.route('/report', methods=['POST', 'GET'])
 @login_required
 def report():
-    return render_template('report.html', name=current_user.name, id_report="123456", path="teste/teste/teste")
+    with open('./project/teste_header.html', 'r') as f:
+        header = f.read()
+    with open('./project/teste_conteudo.html', 'r') as f:
+        conteudo = f.read()
+    return render_template_string(header+conteudo+'{% endblock %}', id_tabela = '#T_fe62f3a4_0281_11eb_a52f_a61bb327c466')
