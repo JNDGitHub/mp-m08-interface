@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request, jsonify, render_template_
 from . import db
 from . import dialog
 from flask_login import login_required, current_user
-
+from report import Report
+import os
 main = Blueprint('main', __name__)
 
 @main.route('/')
@@ -47,8 +48,9 @@ def search_analysis():
 @main.route('/report', methods=['POST', 'GET'])
 @login_required
 def report():
+    log_path = os.getcwd()
     with open('./project/teste_header.html', 'r') as f:
         header = f.read()
-    with open('./project/teste_conteudo.html', 'r') as f:
-        conteudo = f.read()
-    return render_template_string(header+conteudo+'{% endblock %}', id_tabela = '#T_fe62f3a4_0281_11eb_a52f_a61bb327c466')
+    img_report = Report(log_path, './project/imagens_manuais4.npz') 
+    conteudo = img_report.generate_img(return_path=False)
+    return render_template_string(header+conteudo+'{% endblock %}', id_tabela = '#T_f0a9eaf6_1199_11eb_85a2_7429afa56915', name=current_user.name, id_report="T_f0a9eaf6_1199_11eb_85a2_7429afa56915", path=log_path)
