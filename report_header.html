@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+<style>
+    .dataTables_wrapper .dataTables_length, 
+    .dataTables_wrapper .dataTables_filter, 
+    .dataTables_wrapper .dataTables_info, 
+    .dataTables_wrapper .dataTables_processing, 
+    .dataTables_wrapper .dataTables_paginate {
+        font-size: 20px;
+        color: #333;
+    }
+    .col_heading.level0.col0{
+        width: 40px;
+    }
+    .col_heading.level0.col1{
+        width: 100px;
+    }
+    .col_heading.level0.col2{
+        width: 80px;
+    }
+    .col_heading.level0.col3{
+        width: 139px;
+    }
+    .col_heading.level0.col4{
+        width: 100px;
+    }
+    .col_heading.level0.col5{
+        width: 201px;
+    }
+    {{ id_tabela }} th {
+        padding: 5px;
+    }
+</style>
+<script type="text/javascript">
+    var idTabela = {{ id_tabela | tojson }} 
+    $(document).ready(function () {
+        //$.noConflict()
+        alert(idTabela)
+        $(idTabela).dataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Portuguese-Brasil.json"
+            },
+        });
+    });
+</script>
+<h1 class="title">
+    <section class="section has-background-link-light">
+      <div class="container">
+          <nav class="level pl-6 pr-6">
+              <div class="level-left">
+				    <div class="collumn is-fluid has-text-left is-half">
+                      <h3 class="subtitle is-3">Relatório</h3>
+                      <h5 class="subtitle is-5">{{id_tabela}}</h5>
+					  <h5 class="subtitle is-5">Responsável: {{name}}</h5>
+					  <h5 class="subtitle is-5">Nome (ID) da Análise: {{id_report}}</h5>
+					  <h5 class="subtitle is-5">Diretório raiz: {{path}}</h5>
+				    </div>
+			  </div>
+              <div class="level-right">
+                  <div class="collumn is-fluid ">
+                      <script>
+                            $(function(){
+                                $("a#analysis_down").click(function(event){
+					                if(confirm('Lembre-se que as resultados a serem exportados são fruto de um modelo probabilístico, com objetivo de auxílio em triagem e portanto pode haver falsos positivos e/ou falsos negativos. Favor verificá-los visualmente.')) {
+                                        $.getJSON('/analysis_down', { }, function(data){    
+                                    });
+                                    return false;
+					            }
+                                });
+                            });
+                      </script>
+					  <a id="analysis_down" href='#' class="button is-link is-medium is-fullwidth">Exportar Análise</a>  
+                  </div>
+              </div>
+          </nav>
+		  <div class="collumn is-fluid has-text-left pl-6 pr-6">
+			<p class="has-text-danger-dark is-size-5">Atenção: <p class="is-size-5"> Os resultados a seguir são fruto de um modelo probabilístico, com objetivo de auxílio em triagem e portanto pode haver falsos positivos e/ou falsos negativos. Favor verificá-los visualmente.</p></p>
+		  </div>
+      </div>
+  </section>
+  
