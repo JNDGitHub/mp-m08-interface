@@ -11,34 +11,35 @@ class ReportImage():
     def __init__(self, logpath, filename, log_obj, conf_age=0.7, conf_child=0.7, conf_face=0.8, conf_nsfw=0.3):
         self.savepath = logpath
         self.filename = filename
-        
         self.log_obj = log_obj
-                     
+
         self.logfile = None
         if os.path.isfile(os.path.join(logpath, filename+'.npz')):
             self.logfile  = np.load(os.path.join(logpath, filename+'.npz'), allow_pickle=True)
-                   
-        self.rootpath = self.logfile['rootpath']
+
+        self.res_order = ['cont_age', 'cont_faixa', 'age_pred', 'child_pred', 
+                          'prob_nsfw', 'idx_age_pred', 'idx_child_pred', 'all_preds',
+                          'conf_faces']           
+        self.rootpath = self.log_obj.results['rootpath']
         self.conf = {'age': conf_age, 'child': conf_child, 'face': conf_face, 'nsfw': conf_nsfw}
         self.results  = {}
 
     def apply_confidence(self, data):
 
         num_faces, idades, num_criancas = 0, [], 0
-
         
-        if len(data['conf_faces']) > 0:
+        if len(data[8]) > 0:
 
-            mask_faces = np.array(data['conf_faces']) > self.conf['face']
+            mask_faces = np.array(data[8]) > self.conf['face']
             num_faces = np.sum(mask_faces)
             
-            prob_age = data['prob_age'][mask_faces]
+            prob_age = data[2][mask_faces]
             prob_age = prob_age[np.max(prob_age, axis=-1) > self.conf['age']]
             if len(prob_age) > 0: 
                 idades   = [ConfigCNN.classes[age] for age in sorted(np.argmax(prob_age, axis=-1)) ]
             idades += ['ND']* (num_faces-len(prob_age))
             
-            prob_child = data['prob_child'][mask_faces]
+            prob_child = data[3][mask_faces]
             prob_child = prob_child[np.max(prob_child, axis=-1) > self.conf['child']]
             if len(prob_child) > 0:
                 num_criancas = np.sum( [False if child == 1 else True for child in np.argmax(prob_child, axis=-1)] ) 
@@ -63,7 +64,7 @@ class ReportImage():
                 self.results['Arquivo'].append(result['Arquivo'])
 
                 # NSFW
-                nsfw = np.round(result['data']['prob_nsfw'], 3)
+                nsfw = round(result['data'][self.res_order.index('prob_nsfw')], 3)
                 self.results['NSFW'].append('{:.3f}'.format(nsfw))
                 if nsfw >= self.conf['nsfw']: classes += 'Pode conter pornografia. '
 
@@ -100,7 +101,7 @@ class ReportImage():
                                    ("text-align", "center"),
                                    ("font-family", "Helvetica")] ),
         ]
-
+        
         log_df = pd.DataFrame(self.results)
         log_style = (log_df.style.apply(self.color_nsfw, axis=1)
                            .format({'Arquivo': self.make_clickable})
@@ -120,7 +121,7 @@ class ReportImage():
         name = os.path.basename(url)
 #         return '<a href="{}">{}</a>'.format(url,name)
         url = url.replace('\\', '\\\\')
-        return '<a href=\"{{{{ url_for(\'main.showmedia\' , img_url=\'{}\') }}}}\"> {} </a>'.format(url, name)
+        return '<a href=\"{{{{ url_for(\'main.home\' , img_url=\'{}\') }}}}\"> {} </a>'.format(url, name)
 
     def color_nsfw(self, data):
 
